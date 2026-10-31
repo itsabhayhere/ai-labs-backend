@@ -67,8 +67,8 @@ export const enrollmentService = {
       if (courseDoc) {
         courseTitle = courseDoc.title;
         courseSlug = courseDoc.slug;
-        courseThumb = courseDoc.thumbnail || courseThumb;
-        numericBasePrice = parseInt(courseDoc.price.replace(/[^0-9]/g, ""), 10) || 75000;
+        courseThumb = (courseDoc as any).thumbnail || courseThumb;
+        numericBasePrice = (courseDoc as any).price ? (parseInt(String((courseDoc as any).price).replace(/[^0-9]/g, ""), 10) || 75000) : 75000;
       }
     }
 

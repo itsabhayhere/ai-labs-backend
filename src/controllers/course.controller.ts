@@ -4,13 +4,12 @@ import { courseService } from "../services/course.service.js";
 export const courseController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const { category, level, search, popular, sort } = req.query;
+      const { search, sort, page, limit } = req.query;
       const courses = await courseService.getAll({
-        category: category ? String(category) : undefined,
-        level: level ? String(level) : undefined,
         search: search ? String(search) : undefined,
-        popular: popular ? String(popular) : undefined,
-        sort: sort as any
+        sort: sort as any,
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined
       });
 
       res.json({

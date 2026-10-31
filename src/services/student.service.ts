@@ -14,11 +14,23 @@ let inMemoryDashboardData: StudentDashboardData = JSON.parse(
 );
 
 // In-memory user store with hashed passwords for offline/fallback mode
-let inMemoryUsers: Array<StudentUser & { password?: string }> = [
+export let inMemoryUsers: Array<StudentUser & { password?: string }> = [
   {
     ...INITIAL_STUDENT_DASHBOARD.user,
     // Pre-hashed "Student@2026"
     password: bcrypt.hashSync("Student@2026", 10)
+  },
+  {
+    id: "admin_001",
+    name: "Admin User",
+    email: "admin@innovacio.ai",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    role: "admin",
+    batch: "Staff",
+    campus: "Park Street Campus, Kolkata",
+    createdAt: "2026-10-01T00:00:00.000Z",
+    password: bcrypt.hashSync("Admin@2026", 10),
+    enrolledCourses: []
   }
 ];
 
@@ -46,9 +58,7 @@ export const studentService = {
       }).lean();
 
       if (userDoc) {
-        const enrolled = (userDoc.enrolledCourses && userDoc.enrolledCourses.length > 0)
-          ? userDoc.enrolledCourses
-          : inMemoryDashboardData.enrolledCourses;
+        const enrolled = userDoc.enrolledCourses || [];
 
         const { password: _, ...safeUser } = userDoc as any;
         return {
@@ -57,7 +67,7 @@ export const studentService = {
           enrolledCourses: enrolled as any,
           stats: {
             ...inMemoryDashboardData.stats,
-            coursesEnrolled: (enrolled || []).length
+            coursesEnrolled: enrolled.length
           }
         };
       }
@@ -67,9 +77,7 @@ export const studentService = {
       const firstUser = await StudentUserModel.findOne().lean();
       if (firstUser) {
         const { password: _, ...safeUser } = firstUser as any;
-        const enrolled = (firstUser.enrolledCourses && firstUser.enrolledCourses.length > 0)
-          ? firstUser.enrolledCourses
-          : inMemoryDashboardData.enrolledCourses;
+        const enrolled = firstUser.enrolledCourses || [];
 
         return {
           ...inMemoryDashboardData,
@@ -77,7 +85,7 @@ export const studentService = {
           enrolledCourses: enrolled as any,
           stats: {
             ...inMemoryDashboardData.stats,
-            coursesEnrolled: (enrolled || []).length
+            coursesEnrolled: enrolled.length
           }
         };
       }

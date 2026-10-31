@@ -33,12 +33,13 @@ export async function connectDB(): Promise<typeof mongoose | null> {
 
 export async function seedDatabaseIdempotent() {
   try {
-    // 1. Courses - Seed only missing items by slug/id
-    for (const course of COURSES) {
-      const exists = await CourseModel.findOne({ id: course.id }).lean();
-      if (!exists) {
+    // 1. Courses - Seed initial catalog only if collection is completely empty
+    const courseCount = await CourseModel.countDocuments();
+    if (courseCount === 0) {
+      for (const course of COURSES) {
         await CourseModel.create(course);
       }
+      console.log("✓ Seeded initial course catalog");
     }
 
     // 2. Mentors - Seed only missing items by id
@@ -87,6 +88,27 @@ export async function seedDatabaseIdempotent() {
         enrolledCourses: INITIAL_STUDENT_DASHBOARD.enrolledCourses
       });
       console.log("✓ Seeded default student account for local development");
+    }
+
+    // 7. Default Admin User (for local dev / admin portal)
+    const existingAdmin = await StudentUserModel.findOne({
+      email: "admin@innovacio.ai"
+    }).lean();
+
+    if (!existingAdmin && !config.isProduction) {
+      const hashedAdminPassword = await bcrypt.hash("Admin@2026", 10);
+      await StudentUserModel.create({
+        id: "admin_001",
+        name: "Admin User",
+        email: "admin@innovacio.ai",
+        password: hashedAdminPassword,
+        role: "admin",
+        batch: "Staff",
+        campus: "Park Street Campus, Kolkata",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+        enrolledCourses: []
+      });
+      console.log("✓ Seeded default admin account for local development");
     }
   } catch (err: any) {
     console.warn("Seeding notice:", err.message);

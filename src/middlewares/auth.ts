@@ -23,19 +23,30 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ): void => {
+  let token: string | undefined;
+
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  } else if (req.cookies) {
+    token =
+      req.cookies.token ||
+      req.cookies.admin_token ||
+      req.cookies.ai_labs_admin_token ||
+      req.cookies.inno_auth_token ||
+      req.cookies.auth_token;
+  }
+
+  if (!token) {
     res.status(401).json({
       success: false,
       error: {
         code: "UNAUTHORIZED",
-        message: "Authentication required. Please provide a valid Bearer token."
+        message: "Authentication required. Please provide a valid Bearer token or cookie."
       }
     });
     return;
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret) as AuthenticatedUser;
@@ -60,17 +71,26 @@ export const optionalAuthenticate = (
   _res: Response,
   next: NextFunction
 ): void => {
+  let token: string | undefined;
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next();
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  } else if (req.cookies) {
+    token =
+      req.cookies.token ||
+      req.cookies.admin_token ||
+      req.cookies.ai_labs_admin_token ||
+      req.cookies.inno_auth_token ||
+      req.cookies.auth_token;
   }
 
-  const token = authHeader.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, config.jwt.secret) as AuthenticatedUser;
-    req.user = decoded;
-  } catch {
-    // Silently continue for optional authentication
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, config.jwt.secret) as AuthenticatedUser;
+      req.user = decoded;
+    } catch {
+      // Silently continue for optional authentication
+    }
   }
   next();
 };
@@ -90,3 +110,31 @@ export const requireRole = (roles: string[]) => {
     next();
   };
 };
+
+export const requireAdmin = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication required. Please provide a valid Bearer token."
+      }
+    });
+    return;
+  }
+
+  if (req.user.role !== "admin") {
+    res.status(403).json({
+      success: false,
+      error: {
+        code: "FORBIDDEN",
+        message: "Access forbidden. Administrative privileges required."
+      }
+    });
+    return;
+  }
+
+  next();
+};
+
+export const authenticateAdmin = [authenticate, requireAdmin];

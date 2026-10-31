@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { studentService } from "../services/student.service.js";
+import { setAuthCookies, clearAuthCookies } from "../utils/cookie.js";
 
 export const studentController = {
   async getDashboard(req: Request, res: Response, next: NextFunction) {
@@ -42,6 +43,7 @@ export const studentController = {
     try {
       const { email, password } = req.body;
       const result = await studentService.login(email, password);
+      setAuthCookies(res, result.token, "student");
 
       res.json({
         success: true,
@@ -57,11 +59,24 @@ export const studentController = {
     try {
       const { name, email, password } = req.body;
       const result = await studentService.register(name, email, password);
+      setAuthCookies(res, result.token, "student");
 
       res.status(201).json({
         success: true,
         message: `Account created successfully for ${result.user.name}. Welcome to Innovacio AI Labs.`,
         data: result
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async logout(_req: Request, res: Response, next: NextFunction) {
+    try {
+      clearAuthCookies(res);
+      res.json({
+        success: true,
+        message: "Logged out successfully"
       });
     } catch (err) {
       next(err);

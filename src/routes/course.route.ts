@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { courseController } from "../controllers/course.controller.js";
 import { validate } from "../middlewares/validate.js";
-import { authenticate, requireRole } from "../middlewares/auth.js";
+import { authenticate, requireAdmin } from "../middlewares/auth.js";
 import {
   courseQuerySchema,
   courseSlugOrIdParamSchema,
   courseSlugParamSchema,
-  createCourseSchema
+  createCourseSchema,
+  updateCourseSchema
 } from "../validations/course.validation.js";
 
 const router = Router();
@@ -20,21 +21,21 @@ router.get("/:slugOrId", validate({ params: courseSlugOrIdParamSchema }), course
 router.post(
   "/",
   authenticate,
-  requireRole(["admin"]),
+  requireAdmin,
   validate({ body: createCourseSchema }),
   courseController.create
 );
 router.put(
   "/:slugOrId",
   authenticate,
-  requireRole(["admin"]),
-  validate({ params: courseSlugOrIdParamSchema }),
+  requireAdmin,
+  validate({ params: courseSlugOrIdParamSchema, body: updateCourseSchema }),
   courseController.update
 );
 router.delete(
   "/:slugOrId",
   authenticate,
-  requireRole(["admin"]),
+  requireAdmin,
   validate({ params: courseSlugOrIdParamSchema }),
   courseController.delete
 );

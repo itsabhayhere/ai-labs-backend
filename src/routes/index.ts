@@ -7,6 +7,7 @@ import discussionRoute from "./discussion.route.js";
 import contentRoute from "./content.route.js";
 import studentRoute from "./student.route.js";
 import authRoute from "./auth.route.js";
+import adminRoute from "./admin.route.js";
 
 const router = Router();
 
@@ -68,6 +69,20 @@ router.get("/", (_req, res) => {
         profile: "GET /api/student/me",
         updateProgress: "POST /api/student/progress"
       },
+      admin: {
+        login: "POST /api/admin/login",
+        me: "GET /api/admin/me",
+        stats: "GET /api/admin/stats",
+        studentsList: "GET /api/admin/students",
+        studentDetail: "GET /api/admin/students/:id",
+        studentUpdate: "PUT /api/admin/students/:id",
+        studentDelete: "DELETE /api/admin/students/:id",
+        courseList: "GET /api/admin/courses",
+        courseDetail: "GET /api/admin/courses/:slugOrId",
+        courseCreate: "POST /api/admin/courses",
+        courseUpdate: "PUT /api/admin/courses/:slugOrId",
+        courseDelete: "DELETE /api/admin/courses/:slugOrId"
+      },
       content: {
         faqs: "GET /api/faqs (or /api/content/faqs)",
         testimonials: "GET /api/testimonials (or /api/content/testimonials)"
@@ -87,6 +102,7 @@ router.use("/discussions", discussionRoute);
 router.use("/community", discussionRoute);
 router.use("/student", studentRoute);
 router.use("/auth", authRoute);
+router.use("/admin", adminRoute);
 router.use("/content", contentRoute);
 router.use("/", contentRoute); // Mounts /faqs and /testimonials directly
 

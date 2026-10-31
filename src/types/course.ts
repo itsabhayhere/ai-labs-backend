@@ -1,64 +1,72 @@
-export interface CourseModule {
-  week: string;
-  title: string;
-  desc: string;
-  lecturesCount?: number;
-  hoursCount?: number;
+export interface CourseDuration {
+  total: string;
+  breakdown: string;
 }
 
-export type CourseCategory =
-  | "genai"
-  | "datascience"
-  | "machine-learning"
-  | "cybersecurity"
-  | "cloud"
-  | "business"
-  | "fullstack";
+export interface CurriculumAdvancedPhaseModule {
+  timeframe: string;
+  module: string;
+  coreTopics: string[];
+  assignmentTypes: string[];
+}
+
+export interface CurriculumAiIntegrationPhase {
+  topics: string[];
+}
+
+export interface CurriculumAdvancedPlusPhaseModule {
+  moduleNumber: number;
+  moduleName: string;
+  relevantTopics: string[];
+}
+
+export interface CourseCurriculum {
+  advancedPhase: CurriculumAdvancedPhaseModule[];
+  aiIntegrationPhase: CurriculumAiIntegrationPhase;
+  advancedPlusPhase: CurriculumAdvancedPlusPhaseModule[];
+}
+
+export interface ProjectCheckpoint {
+  checkpoint: string;
+  description: string;
+}
+
+export interface CareerSupportItem {
+  service: string;
+  details: string;
+}
+
+export interface SuccessMetric {
+  metric: string;
+  description: string;
+}
 
 export interface Course {
   id: string;
   slug: string;
-  category: CourseCategory;
-  badge?: string;
-  isMostPopular?: boolean;
-  level: string;
-  duration: string;
-  format: string;
   title: string;
-  shortDesc: string;
-  fullDesc?: string;
-  thumbnail: string;
-  rating: number;
-  reviewsCount: number;
-  instructor: string;
-  instructorRole: string;
-  price: string;
-  originalPrice: string;
-  discount: string;
-  saveAmount: string;
-  emi: string;
-  seatsLeft: number;
-  isBestseller?: boolean;
-  enrolledCount: string;
-  startDate?: string;
-  schedule?: string;
-  highlights: string[];
-  tools: string[];
-  modules: CourseModule[];
-  capstone?: string;
-  whatYouWillLearn?: string[];
-  prerequisites?: string[];
+  positioning: string;
+  audience: string;
+  duration: CourseDuration;
+  coreStack: string[];
+  curriculum: CourseCurriculum;
+  projectCheckpoints: ProjectCheckpoint[];
+  careerSupportBundle: CareerSupportItem[];
+  successMetrics: SuccessMetric[];
   createdAt?: string;
   updatedAt?: string;
 }
 
-export type CreateCourseInput = Omit<Course, "id"> & { id?: string };
+export type CreateCourseInput = Omit<Course, "id" | "slug"> & {
+  id?: string;
+  slug?: string;
+};
+
 export type UpdateCourseInput = Partial<CreateCourseInput>;
 
 export interface CourseFilterQuery {
-  category?: string;
-  level?: string;
   search?: string;
-  popular?: string;
-  sort?: "price-asc" | "price-desc" | "rating" | "popular";
+  page?: number;
+  limit?: number;
+  sort?: "title-asc" | "title-desc" | "newest" | "oldest";
 }
