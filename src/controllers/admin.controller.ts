@@ -4,6 +4,21 @@ import { setAuthCookies, clearAuthCookies } from "../utils/cookie.js";
 
 export const adminController = {
   // ─── ADMIN AUTHENTICATION ───────────────────────────────────────────
+  async register(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, email, password, role, avatar } = req.body;
+      const result = await adminService.register({ name, email, password, role, avatar });
+      setAuthCookies(res, result.token, "admin");
+      res.status(201).json({
+        success: true,
+        message: "Administrator account created successfully",
+        data: result
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;

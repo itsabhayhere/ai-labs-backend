@@ -5,6 +5,15 @@ export const adminLoginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters").max(100)
 });
 
+export const adminRegisterSchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().trim().email("Please provide a valid administrator email address"),
+  password: z.string().min(6, "Password must be at least 6 characters").max(100),
+  role: z.enum(["student", "alumni", "admin"]).optional().default("admin"),
+  avatar: z.string().trim().url().optional(),
+  secretKey: z.string().trim().optional()
+});
+
 export const adminStudentQuerySchema = z.object({
   page: z
     .string()

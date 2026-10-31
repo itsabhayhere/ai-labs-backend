@@ -17,7 +17,15 @@ if (isProduction && (!jwtSecret || jwtSecret.length < 32)) {
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
-  : [frontendUrl, "http://localhost:3000", "http://127.0.0.1:3000"];
+  : [
+      frontendUrl,
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:3001",
+      "http://127.0.0.1:3001",
+      "http://localhost:3002",
+      "http://127.0.0.1:3002"
+    ];
 
 const resendApiKey = process.env.RESEND_API_KEY || "";
 const resendFromEmail = process.env.RESEND_FROM_EMAIL || "Innovacio AI Labs <onboarding@resend.dev>";

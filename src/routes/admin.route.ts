@@ -5,6 +5,7 @@ import { validate } from "../middlewares/validate.js";
 import { authLimiter } from "../middlewares/rateLimiter.js";
 import {
   adminLoginSchema,
+  adminRegisterSchema,
   adminStudentQuerySchema,
   adminCourseQuerySchema,
   adminStudentIdParamSchema,
@@ -19,6 +20,12 @@ import {
 const router = Router();
 
 // ─── PUBLIC ADMIN AUTHENTICATION ──────────────────────────────────────
+router.post(
+  "/register",
+  authLimiter,
+  validate({ body: adminRegisterSchema }),
+  adminController.register
+);
 router.post(
   "/login",
   authLimiter,

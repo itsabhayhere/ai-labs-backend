@@ -62,6 +62,25 @@ describe("API Security & Integration Tests", () => {
       expect(res.body.error.code).toBe("ACCOUNT_EXISTS");
     });
 
+    it("POST /api/admin/register should create a new administrator and return JWT", async () => {
+      const adminEmail = `admin_test_${Date.now()}@innovacio.ai`;
+      const res = await request(app)
+        .post("/api/admin/register")
+        .send({
+          name: "Test Admin Officer",
+          email: adminEmail,
+          password: "AdminPassword@2026",
+          role: "admin"
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.user.email).toBe(adminEmail);
+      expect(res.body.data.user.role).toBe("admin");
+      expect(res.body.data.user.password).toBeUndefined();
+    });
+
     it("POST /api/auth/login should verify correct credentials and return JWT", async () => {
       const res = await request(app)
         .post("/api/auth/login")

@@ -25,6 +25,107 @@ function isDbConnected(): boolean {
 export const adminService = {
   // ─── ADMIN AUTHENTICATION ───────────────────────────────────────────
 
+  async register(data: {
+    name: string;
+    email: string;
+    password: string;
+    role?: string;
+    avatar?: string;
+  }): Promise<{ token: string; user: Omit<StudentUser, "password"> }> {
+    const normalizedEmail = data.email.trim().toLowerCase();
+
+    if (isDbConnected()) {
+      const existing = await StudentUserModel.findOne({ email: normalizedEmail }).lean();
+      if (existing) {
+        const err: any = new Error("An account with this email address already exists.");
+        err.statusCode = 409;
+        err.code = "ACCOUNT_EXISTS";
+        throw err;
+      }
+
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      const newAdminId = `admin_${Date.now()}`;
+
+      const created = await StudentUserModel.create({
+        id: newAdminId,
+        name: data.name.trim(),
+        email: normalizedEmail,
+        password: hashedPassword,
+        avatar:
+          data.avatar ||
+          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+        role: "admin",
+        batch: "Staff",
+        campus: "Park Street Campus, Kolkata",
+        enrolledCourses: []
+      });
+
+      const token = jwt.sign(
+        {
+          id: created.id,
+          email: created.email,
+          role: created.role,
+          name: created.name
+        },
+        config.jwt.secret,
+        { expiresIn: config.jwt.expiresIn as any }
+      );
+
+      const userObj = created.toObject ? created.toObject() : created;
+      const { password: _, ...safeUser } = userObj as any;
+
+      return {
+        token,
+        user: safeUser as StudentUser
+      };
+    }
+
+    // In-Memory Fallback
+    const existing = inMemoryUsers.find((u) => u.email.toLowerCase() === normalizedEmail);
+    if (existing) {
+      const err: any = new Error("An account with this email address already exists.");
+      err.statusCode = 409;
+      err.code = "ACCOUNT_EXISTS";
+      throw err;
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const newAdminId = `admin_${Date.now()}`;
+    const newAdmin: StudentUser = {
+      id: newAdminId,
+      name: data.name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      avatar:
+        data.avatar ||
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      role: "admin",
+      batch: "Staff",
+      campus: "Park Street Campus, Kolkata",
+      enrolledCourses: [],
+      createdAt: new Date().toISOString()
+    };
+
+    inMemoryUsers.push(newAdmin);
+
+    const token = jwt.sign(
+      {
+        id: newAdmin.id,
+        email: newAdmin.email,
+        role: newAdmin.role,
+        name: newAdmin.name
+      },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn as any }
+    );
+
+    const { password: _, ...safeUser } = newAdmin;
+    return {
+      token,
+      user: safeUser
+    };
+  },
+
   async login(
     email: string,
     password?: string
